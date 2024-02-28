@@ -1,15 +1,28 @@
 import re
 import nltk
+import spacy
+from langdetect import detect, DetectorFactory
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 from joblib import load
+
+# Ensure consistent results from langdetect
+DetectorFactory.seed = 0
+
+# Load SpaCy Spanish model
+nlp_spacy_es = spacy.load('es_core_news_sm')
 
 # Load the saved TF-IDF Vectorizer and model
 tfidf_vectorizer_ngrams = load('tfidf_vectorizer_ngrams.joblib')
 model = load('model.joblib')
 
-nltk.download('stopwords')
-nltk.download('wordnet')
+# Attempt to find the NLTK data packages before downloading
+try:
+    nltk.data.find('corpora/stopwords')
+    nltk.data.find('corpora/wordnet')
+except LookupError:
+    nltk.download('stopwords')
+    nltk.download('wordnet')
 
 def preprocess_text(text):
     # Fill missing textual data with an empty string
@@ -26,18 +39,32 @@ def preprocess_text(text):
     text = re.sub(r'\s+[a-zA-Z]\s+', ' ', text)  # Remove single characters
     text = re.sub(r'\^[a-zA-Z]\s+', ' ', text)  # Remove single characters at the start
     text = re.sub(r'\s+', ' ', text, flags=re.I)  # Replace multiple spaces with a single space        
-    text = text.replace('ei ei', '')
+    text = re.sub(r'\bhola\b', '', text)  # Removes whole word 'hola' 
+    text = text.replace('ei ei', '') # Removes string 'ei ei' from data
 
-    # Tokenization
-    tokens = text.split()
+    try:
+        # Use langdetect to determine the language
+        lang = detect(text)
+    except:
+        lang = "en"
+
+    if lang == "es":
+        # Spanish text processing with SpaCy
+        doc = nlp_spacy_es(text)
+        lemmatised_tokens = [token.lemma_ for token in doc]
     
-    # Remove stopwords
-    stop_words = set(stopwords.words('english')) | set(stopwords.words('spanish'))
-    tokens = [word for word in tokens if word not in stop_words]
+    else:
+        # Tokenization
+        tokens = text.split()
+
+        # Remove stopwords
+        stop_words = set(stopwords.words('english')) | set(stopwords.words('spanish'))
+        tokens = [word for word in tokens if word not in stop_words]
+        
+        # Lemmatization
+        lemmatizer = WordNetLemmatizer()
+        lemmatised_tokens = [lemmatizer.lemmatize(word) for word in tokens]
     
-    # Lemmatization
-    lemmatizer = WordNetLemmatizer()
-    lemmatised_tokens = [lemmatizer.lemmatize(word) for word in tokens]
     lemmatised_text = ' '.join(lemmatised_tokens)
     
     return lemmatised_text
