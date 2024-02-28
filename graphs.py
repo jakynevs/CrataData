@@ -18,7 +18,6 @@ if duplicate_rows:
 df['lemmatised_text'] = df['about'].apply(preprocess_text)
 
 # Remove stopwords
-nltk.download('stopwords')
 stop_words = set(stopwords.words('english')) | set(stopwords.words('spanish'))
 stop_words_list = list(stop_words)
 
