@@ -56,19 +56,19 @@ df['tokens'] = df['tokens'].apply(lambda x: [word for word in x if word not in s
 lemmatizer = WordNetLemmatizer()
 nltk.download('wordnet')
 
-df['lemmatized_tokens'] = df['tokens'].apply(lambda x: [lemmatizer.lemmatize(word) for word in x])
-df['lemmatized_text'] = df['lemmatized_tokens'].apply(lambda x: ' '.join(x))
+df['lemmatised_tokens'] = df['tokens'].apply(lambda x: [lemmatizer.lemmatize(word) for word in x])
+df['lemmatised_text'] = df['lemmatised_tokens'].apply(lambda x: ' '.join(x))
 
-non_sustainable_text = df[df['Label'] == 0]['lemmatized_text']
-sustainable_text = df[df['Label'] == 1]['lemmatized_text']
+non_sustainable_text = df[df['Label'] == 0]['lemmatised_text']
+sustainable_text = df[df['Label'] == 1]['lemmatised_text']
 
 # Initialize the TF-IDF Vectorizer
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_vectorizer_ngrams = TfidfVectorizer(ngram_range=(1, 2))
 
-# Fit and transform the lemmatized text
-# X_tfidf = tfidf_vectorizer.fit_transform(df['lemmatized_text'])
-X_tfidf_ngrams = tfidf_vectorizer_ngrams.fit_transform(df['lemmatized_text'])
+# Fit and transform the lemmatised text
+# X_tfidf = tfidf_vectorizer.fit_transform(df['lemmatised_text'])
+X_tfidf_ngrams = tfidf_vectorizer_ngrams.fit_transform(df['lemmatised_text'])
 
 # Your target variable
 y = df['Label']

@@ -20,8 +20,9 @@ def preprocess_text(text):
     text = re.sub(r'\W', ' ', text)  # Removes special characters
     text = re.sub(r'\s+[a-zA-Z]\s+', ' ', text)  # Remove single characters
     text = re.sub(r'\^[a-zA-Z]\s+', ' ', text)  # Remove single characters at the start
-    text = re.sub(r'\s+', ' ', text, flags=re.I)  # Replace multiple spaces with a single space
-    
+    text = re.sub(r'\s+', ' ', text, flags=re.I)  # Replace multiple spaces with a single space        
+    text = text.replace('ei ei', '')
+
     # Tokenization
     tokens = text.split()
     
@@ -31,10 +32,10 @@ def preprocess_text(text):
     
     # Lemmatization
     lemmatizer = WordNetLemmatizer()
-    lemmatized_tokens = [lemmatizer.lemmatize(word) for word in tokens]
-    lemmatized_text = ' '.join(lemmatized_tokens)
+    lemmatised_tokens = [lemmatizer.lemmatize(word) for word in tokens]
+    lemmatised_text = ' '.join(lemmatised_tokens)
     
-    return lemmatized_text
+    return lemmatised_text
 
 # Example of transforming a single preprocessed text for prediction
 def predict_sustainability(text):
@@ -45,6 +46,6 @@ def predict_sustainability(text):
     return 'Yes' if prediction == 1 else 'No'
 
 def analyse_text(about_section_text):
-    clean_lemmatized_text = preprocess_text(about_section_text)
-    result = predict_sustainability(clean_lemmatized_text)
+    clean_lemmatised_text = preprocess_text(about_section_text)
+    result = predict_sustainability(clean_lemmatised_text)
     return result
