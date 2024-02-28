@@ -9,12 +9,12 @@
     <h2>Enter a LinkedIn URL</h2>
     <form method="post">
         <input type="text" name="linkedin_url" placeholder="Enter LinkedIn URL here" style="width: 600px; height: 20px; font-size: 16px;" required>
-        <button type="submit">Analyze</button>
+        <button type="submit">Analyse</button>
     </form>
 
-    {% if analysis_result %}
+    {% if scrape_and_analyse_result %}
         <!-- Displaying the analysis result on the same line as the question -->
-        <h2>Is the company sustainable? {{ analysis_result }}</h2>
+        <h2>Is the company sustainable? {{ scrape_and_analyse_result }}</h2>
         <!-- About of company text on a new line -->
         <p>About of company: {{ about_section|safe }}</p>
     {% endif %}

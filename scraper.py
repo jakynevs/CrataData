@@ -9,8 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from analyser import analyse_text
 
-
-def analyze_about_section(url):
+def scrape_and_analyse(url):
     # specifies the path to the chromedriver.exe
     driver_path = dp
     service = Service(executable_path=driver_path)
