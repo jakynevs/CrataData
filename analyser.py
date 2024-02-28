@@ -15,6 +15,10 @@ def preprocess_text(text):
     # Fill missing textual data with an empty string
     text = text if text is not None else ''
     
+    # Remove URLs & emails
+    text = re.sub(r'http\S+|www\.\S+', '', text)
+    text = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '', text)
+    
     # Normalization
     text = text.lower()  # Convert to lowercase
     text = re.sub(r'\W', ' ', text)  # Removes special characters
