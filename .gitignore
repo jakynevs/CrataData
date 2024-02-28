@@ -1,3 +1,4 @@
 constants.py
 test.ipynb
 venv/
+.env
