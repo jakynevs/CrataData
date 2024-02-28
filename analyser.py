@@ -18,9 +18,10 @@ def preprocess_text(text):
     # Remove URLs & emails
     text = re.sub(r'http\S+|www\.\S+', '', text)
     text = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '', text)
-    
+
     # Normalization
     text = text.lower()  # Convert to lowercase
+    text = re.sub(r'\b\d+\b', '', text) # Removes numbers
     text = re.sub(r'\W', ' ', text)  # Removes special characters
     text = re.sub(r'\s+[a-zA-Z]\s+', ' ', text)  # Remove single characters
     text = re.sub(r'\^[a-zA-Z]\s+', ' ', text)  # Remove single characters at the start
