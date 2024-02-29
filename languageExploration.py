@@ -2,19 +2,19 @@ from analyser import preprocess_text, predict_sustainability
 import pandas as pd
 from langdetect import detect
 
-def detect_language(text):
-    try:
-        return detect(text)
-    except:
-        return 'unknown'  # Fallback in case detection fails
-    
 # Import Dataset
 dataset_path = 'dataset.csv'
-
 df = pd.read_csv(dataset_path, usecols=['about', 'Label'])
-df[['lemmatised_text', 'language']] = df['about'].apply(lambda x: pd.Series(preprocess_text(x)))
 
-df['predicted_label'] = [predict_sustainability(text) for text in df['lemmatised text']]
+# Detect language and apply predict_sustainability outside of lambda for better performance
+def process_row(row):
+    language = detect(row['about'])  # Detect language
+    predicted_label, _ = predict_sustainability(row['about'])  # Assuming predict_sustainability doesn't need language
+    return predicted_label, language
+
+# Apply the function to the DataFrame
+results = df.apply(process_row, axis=1, result_type='expand')
+df[['predicted_label', 'language']] = results
 
 def categorize_prediction(row):
     if row['Label'] == 1 and row['predicted_label'] == 1:
@@ -26,7 +26,6 @@ def categorize_prediction(row):
     elif row['Label'] == 1 and row['predicted_label'] == 0:
         return 'FN'
 
-# Apply the function to categorize each prediction
 df['error_type'] = df.apply(categorize_prediction, axis=1)
 
 error_analysis = df.groupby(['language', 'error_type']).size().unstack(fill_value=0)
