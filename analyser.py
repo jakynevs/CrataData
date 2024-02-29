@@ -24,6 +24,9 @@ except LookupError:
     nltk.download('stopwords')
     nltk.download('wordnet')
 
+# Load SpaCy Spanish model
+nlp_spacy_es = spacy.load('es_core_news_sm')
+
 def preprocess_text(text):
     # Fill missing textual data with an empty string
     text = text if text is not None else ''
@@ -42,40 +45,41 @@ def preprocess_text(text):
     text = re.sub(r'\bhola\b', '', text)  # Removes whole word 'hola' 
     text = text.replace('ei ei', '') # Removes string 'ei ei' from data
 
-    # try:
-    #     # Use langdetect to determine the language
-    #     lang = detect(text)
-    # except:
-    #     lang = "en"
+    try:
+        # Use langdetect to determine the language
+        lang = detect(text)
+    except:
+        lang = "es"
 
-    # if lang == "es":
-    #     # Spanish text processing with SpaCy
-    #     doc = nlp_spacy_es(text)
-    #     lemmatised_tokens = [token.lemma_ for token in doc]
-    
-    # else:
-    # Tokenization
-    tokens = text.split()
+    if lang == "es":
+        # Spanish text processing with SpaCy
+        doc = nlp_spacy_es(text)
+        stop_words = set(stopwords.words('spanish'))
 
-    # Remove stopwords
-    stop_words = set(stopwords.words('english')) | set(stopwords.words('spanish'))
-    tokens = [word for word in tokens if word not in stop_words]
+        lemmatised_tokens = [token.lemma_ for token in doc if token.text.lower() not in stop_words]
     
-    # Lemmatization
-    lemmatizer = WordNetLemmatizer()
-    lemmatised_tokens = [lemmatizer.lemmatize(word) for word in tokens]
+    else:
+        # Tokenization
+        tokens = text.split()
+
+        # Remove stopwords
+        stop_words = set(stopwords.words('english')) 
+        tokens = [word for word in tokens if word.lower() not in stop_words]
+        
+        # Lemmatization
+        lemmatizer = WordNetLemmatizer()
+        lemmatised_tokens = [lemmatizer.lemmatize(word) for word in tokens]
     
     lemmatised_text = ' '.join(lemmatised_tokens)
     
-    return lemmatised_text
+    return lemmatised_text, lang
 
 # Example of transforming a single preprocessed text for prediction
 def predict_sustainability(text):
     preprocessed_text = preprocess_text(text)
     transformed_text = tfidf_vectorizer_ngrams.transform([preprocessed_text])
     prediction = model.predict(transformed_text)
-    print("prediction: ", prediction)
-    return 'Yes' if prediction == 1 else 'No'
+    return prediction
 
 def analyse_text(about_section_text):
     clean_lemmatised_text = preprocess_text(about_section_text)
