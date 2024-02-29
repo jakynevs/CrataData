@@ -60,14 +60,11 @@ def preprocess_text(text):
     lemmatised_tokens = [token.lemma_ for token in doc if token.text not in stop_words]
 
     return ' '.join(lemmatised_tokens), lang
-    
+
+# Function that uses model to predict text
 def predict_sustainability(text):
     preprocessed_text, lang = preprocess_text(text)  # Preprocess and get language
     transformed_text = tfidf_vectorizer_ngrams.transform([preprocessed_text])
     prediction = model.predict(transformed_text)
     result = (prediction[0], lang)
-    return result
-
-def analyse_text(about_section_text):
-    result = predict_sustainability(about_section_text)
     return result

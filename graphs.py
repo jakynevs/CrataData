@@ -42,8 +42,6 @@ def plot_top_ngrams(text, ngram_range, n=20):
         plt.tight_layout()
         plt.show(block=False)
 
-# plot_top_ngrams(df, ngram_range=(3,3))
-
 # Visualize the distribution of labels
 df['Label'].value_counts().plot(kind='bar')
 plt.title('Distribution of Labels')
