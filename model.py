@@ -19,16 +19,19 @@ def load_or_process_dataset(path):
     try:
         df = load('preprocessed_df.joblib')
         print("Loaded preprocessed data from cache.")
+    
     except FileNotFoundError:
         # Ensure data is in the correct format for processing
         df['about'] = df['about'].astype(str)
         df['lemmatised_text'] = df['about'].apply(lambda text: preprocess_text(text))
         dump(df, 'preprocessed_df.joblib')
+    
     return df
 
 # Feature creation and vectorization for training phase
 def prepare_features(df, vectorizer=None, fit_vectorizer=False):
-    preprocessed_data = df['lemmatised_text'].apply(lambda text: preprocess_text(text)[0])  # Extract lemmatised text only
+    preprocessed_data = df['lemmatised_text'].apply(lambda text: preprocess_text(str(text))[0])  # Convert text to string before processing
+
     
     if vectorizer is None:
         vectorizer = TfidfVectorizer(ngram_range=(1, 1))
