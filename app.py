@@ -9,13 +9,17 @@ def home():
     about_section_text = ""
 
     if request.method == 'POST':
-        url = request.form['linkedin_url']
-        result, about_section_text = scrape_and_analyse(url)
-        if result[0] == 1:
-            result_text = 'Yes'
-        else:
-            result_text = 'No'
+        try:
+            url = request.form['linkedin_url']
+            result, about_section_text = scrape_and_analyse(url)
+            if result[0] == 1:
+                result_text = 'Yes'
+            else:
+                result_text = 'No'
 
+        except Exception as e:
+            print(f"Error during scraping and analysis: {e}")
+            
     return render_template('index.html', scrape_and_analyse_result=result_text, about_section=about_section_text)
 
 if __name__ == '__main__':
