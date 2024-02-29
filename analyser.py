@@ -25,8 +25,8 @@ except LookupError:
 nlp_spacy_en = spacy.load('en_core_web_sm', disable=['parser', 'ner', 'entity_linker'])
 nlp_spacy_es = spacy.load('es_core_news_sm', disable=['parser', 'ner', 'entity_linker'])
 
-
 def preprocess_text(text):
+        
     # Fill missing textual data with an empty string
     text = text if text is not None else ''
     
