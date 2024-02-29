@@ -1,4 +1,5 @@
 import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.corpus import stopwords
