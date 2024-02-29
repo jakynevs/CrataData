@@ -4,21 +4,14 @@ import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.corpus import stopwords
 from analyser import preprocess_text
+from model import load_or_process_dataset
 
 # Import Dataset
 dataset_path = 'dataset.csv'
-df = pd.read_csv(dataset_path)
+df = load_or_process_dataset(dataset_path)
 
-# Check for duplicate rows
-duplicate_rows = df.duplicated().sum()
-if duplicate_rows:
-    print("Number of duplicate rows:", duplicate_rows)
-
-df['lemmatised_text'] = df['about'].apply(preprocess_text)
-
-# Remove stopwords
-stop_words = set(stopwords.words('english')) | set(stopwords.words('spanish'))
-stop_words_list = list(stop_words)
+# Ensure preprocess_text returns a string, assuming the first element is the desired text
+df['lemmatised_text'] = df['about'].apply(lambda x: preprocess_text(x)[0] if isinstance(preprocess_text(x), tuple) else preprocess_text(x))
 
 # Function to plot most common word combos
 def plot_top_ngrams(text, ngram_range, n=20):
@@ -27,7 +20,7 @@ def plot_top_ngrams(text, ngram_range, n=20):
     for label, category_name in categories.items():
         text = df[df['Label'] == label]['lemmatised_text']
 
-        vec = CountVectorizer(ngram_range=ngram_range, stop_words=stop_words_list).fit(text)
+        vec = CountVectorizer(ngram_range=ngram_range).fit(text)
         bag_of_words = vec.transform(text)
         sum_words = bag_of_words.sum(axis=0) 
         words_freq = [(word, sum_words[0, idx]) for word, idx in vec.vocabulary_.items()]
@@ -41,6 +34,8 @@ def plot_top_ngrams(text, ngram_range, n=20):
         plt.xticks(rotation=45, ha="right")
         plt.tight_layout()
         plt.show(block=False)
+
+plot_top_ngrams(df, ngram_range=(2,4))
 
 # Visualize the distribution of labels
 df['Label'].value_counts().plot(kind='bar')
