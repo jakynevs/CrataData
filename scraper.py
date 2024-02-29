@@ -1,6 +1,3 @@
-from random import randrange
-import time
-from bs4 import BeautifulSoup
 from constants import * 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
