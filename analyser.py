@@ -9,9 +9,6 @@ from joblib import load
 # Ensure consistent results from langdetect
 DetectorFactory.seed = 0
 
-# Load SpaCy Spanish model
-nlp_spacy_es = spacy.load('es_core_news_sm')
-
 # Load the saved TF-IDF Vectorizer and model
 tfidf_vectorizer_ngrams = load('tfidf_vectorizer_ngrams.joblib')
 model = load('model.joblib')
@@ -24,8 +21,10 @@ except LookupError:
     nltk.download('stopwords')
     nltk.download('wordnet')
 
-# Load SpaCy Spanish model
-nlp_spacy_es = spacy.load('es_core_news_sm')
+# Load SpaCy models with disabled components for faster lemmatization
+nlp_spacy_en = spacy.load('en_core_web_sm', disable=['parser', 'ner', 'entity_linker'])
+nlp_spacy_es = spacy.load('es_core_news_sm', disable=['parser', 'ner', 'entity_linker'])
+
 
 def preprocess_text(text):
     # Fill missing textual data with an empty string
@@ -37,51 +36,47 @@ def preprocess_text(text):
 
     # Normalization
     text = text.lower()  # Convert to lowercase
-    text = re.sub(r'\b\d+\b', '', text) # Removes numbers
-    text = re.sub(r'\W', ' ', text)  # Removes special characters
-    text = re.sub(r'\s+[a-zA-Z]\s+', ' ', text)  # Remove single characters
-    text = re.sub(r'\^[a-zA-Z]\s+', ' ', text)  # Remove single characters at the start
-    text = re.sub(r'\s+', ' ', text, flags=re.I)  # Replace multiple spaces with a single space        
+    text = re.sub(r'\b\d+\b', '', text)  # Remove numbers first to avoid creating single characters
+    text = re.sub(r'\b[a-zA-Z]\b', ' ', text)  # Remove single characters globally, simplifying the task
+    text = re.sub(r'\W+', ' ', text)  # Replace sequences of non-word characters with a single space, covering special chars and multiple spaces
     text = re.sub(r'\bhola\b', '', text)  # Removes whole word 'hola' 
     text = text.replace('ei ei', '') # Removes string 'ei ei' from data
 
+
+    # Use langdetect to determine the language
     try:
-        # Use langdetect to determine the language
         lang = detect(text)
     except:
-        lang = "es"
+        lang = "es" # Default to Spanish if detection fails
+
+ # Initialize an empty list for lemmatised tokens
+    lemmatised_tokens = []
 
     if lang == "es":
         # Spanish text processing with SpaCy
         doc = nlp_spacy_es(text)
-        stop_words = set(stopwords.words('spanish'))
-
-        lemmatised_tokens = [token.lemma_ for token in doc if token.text.lower() not in stop_words]
-    
     else:
-        # Tokenization
-        tokens = text.split()
-
-        # Remove stopwords
-        stop_words = set(stopwords.words('english')) 
-        tokens = [word for word in tokens if word.lower() not in stop_words]
-        
-        # Lemmatization
-        lemmatizer = WordNetLemmatizer()
-        lemmatised_tokens = [lemmatizer.lemmatize(word) for word in tokens]
+        # English text processing with SpaCy
+        doc = nlp_spacy_en(text)
+        lang = "en"  # Set language to English
     
+    # Extract stopwords for the detected language
+    stop_words = set(stopwords.words('spanish')) if lang == "es" else set(stopwords.words('english'))
+    
+    # Lemmatisation with context-aware processing
+    lemmatised_tokens = [token.lemma_ for token in doc if token.text not in stop_words]
+
     lemmatised_text = ' '.join(lemmatised_tokens)
     
     return lemmatised_text, lang
 
-# Example of transforming a single preprocessed text for prediction
 def predict_sustainability(text):
-    preprocessed_text = preprocess_text(text)
+    preprocessed_text, lang = preprocess_text(text)  # Preprocess and get language
     transformed_text = tfidf_vectorizer_ngrams.transform([preprocessed_text])
     prediction = model.predict(transformed_text)
-    return prediction
+    result = (prediction[0], lang)
+    return result
 
 def analyse_text(about_section_text):
-    clean_lemmatised_text = preprocess_text(about_section_text)
-    result = predict_sustainability(clean_lemmatised_text)
+    result = predict_sustainability(about_section_text)
     return result
