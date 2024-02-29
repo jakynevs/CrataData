@@ -20,37 +20,30 @@ def load_or_process_dataset(path):
         df = load('preprocessed_df.joblib')
         print("Loaded preprocessed data from cache.")
     except FileNotFoundError:
-        print("Preprocessed data not found, preprocessing now...")
-        df = pd.read_csv(path, usecols=['about', 'Label'])
-        df['lemmatised_text'] = df['about'].apply(preprocess_text)
+        # Ensure data is in the correct format for processing
+        df['about'] = df['about'].astype(str)
+        df['lemmatised_text'] = df['about'].apply(lambda text: preprocess_text(text))
         dump(df, 'preprocessed_df.joblib')
     return df
 
-# Load or process the dataset
-df = load_or_process_dataset(dataset_path)
-
 # Feature creation and vectorization for training phase
 def prepare_features(df, vectorizer=None, fit_vectorizer=False):
-    # If in training phase, fit the vectorizer; if not, transform using the loaded vectorizer
-    df['lemmatised_text'] = df['lemmatised_text'].astype(str)  # Ensure all elements are strings
-
-    if fit_vectorizer:
-        vectorizer = TfidfVectorizer(ngram_range=(1,1))
-        preprocessed_data = df['lemmatised_text'].apply(lambda text: preprocess_text(text)[0])  # Extract lemmatised text only
-        X_text = vectorizer.fit_transform(preprocessed_data)
-        dump(vectorizer, vectorizer_path)  # Save the fitted vectorizer for later use
+    preprocessed_data = df['lemmatised_text'].apply(lambda text: preprocess_text(text)[0])  # Extract lemmatised text only
+    
+    if vectorizer is None:
+        vectorizer = TfidfVectorizer(ngram_range=(1, 1))
+        if fit_vectorizer:
+            X_text = vectorizer.fit_transform(preprocessed_data)
+            dump(vectorizer, vectorizer_path)
+    
     else:
-        preprocessed_data = df['lemmatised_text'].apply(lambda text: preprocess_text(text)[0])  # Extract lemmatised text only
         X_text = vectorizer.transform(preprocessed_data)
 
-    X_combined = X_text
-
-    return X_combined
+    return X_text
 
 # Training phase
 def train_model(df):
-    vectorizer = None  # No vectorizer loaded yet, as we'll fit a new one
-    X_combined = prepare_features(df, vectorizer, fit_vectorizer=True)
+    X_combined = prepare_features(df, fit_vectorizer=True)
     y = df['Label']
 
     # Split data
