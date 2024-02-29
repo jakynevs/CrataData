@@ -1,7 +1,5 @@
 import pandas as pd
-import nltk
 import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.corpus import stopwords
 from analyser import preprocess_text
@@ -43,26 +41,26 @@ def plot_top_ngrams(text, ngram_range, n=20):
         plt.tight_layout()
         plt.show(block=False)
 
-plot_top_ngrams(df, ngram_range=(3,3))
+# plot_top_ngrams(df, ngram_range=(3,3))
 
-# # Visualize the distribution of labels
-# df['Label'].value_counts().plot(kind='bar')
-# plt.title('Distribution of Labels')
-# plt.xlabel('Label')
-# plt.ylabel('Number of Samples')
-# plt.xticks(ticks=[0, 1], labels=['Not Sustainable (0)', 'Sustainable (1)'], rotation=0)
-# plt.show(block=False)
+# Visualize the distribution of labels
+df['Label'].value_counts().plot(kind='bar')
+plt.title('Distribution of Labels')
+plt.xlabel('Label')
+plt.ylabel('Number of Samples')
+plt.xticks(ticks=[0, 1], labels=['Not Sustainable (0)', 'Sustainable (1)'], rotation=0)
+plt.show(block=False)
 
-# # Calculate text length for each company
-# df['Text_Length'] = df['about'].apply(lambda x: len(x.split()))
+# Calculate text length for each company
+df['Text_Length'] = df['about'].apply(lambda x: len(x.split()))
 
-# # Plot text length distribution for each label
-# plt.figure(figsize=(8, 6))
-# sns.boxplot(x='Label', y='Text_Length', data=df)
-# plt.title('Text Length by Label')
-# plt.xlabel('Label')
-# plt.ylabel('Number of Words')
-# plt.show(block=False)
+# Plot text length distribution for each label
+plt.figure(figsize=(8, 6))
+sns.boxplot(x='Label', y='Text_Length', data=df)
+plt.title('Text Length by Label')
+plt.xlabel('Label')
+plt.ylabel('Number of Words')
+plt.show(block=False)
 
 plt.show()
 
