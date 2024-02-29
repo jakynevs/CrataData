@@ -1,6 +1,4 @@
-from urllib.parse import urlencode
-from flask import Flask, redirect, request, render_template, session
-import requests
+from flask import Flask, request, render_template, session
 from scraper import scrape_and_analyse
 
 app = Flask(__name__)

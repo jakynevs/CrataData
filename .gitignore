@@ -5,3 +5,5 @@ venv/
 Graphs/
 *.joblib
 *.pyc
+__pycache__/analyser.cpython-39.pyc
+__pycache__/
