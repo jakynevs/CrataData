@@ -32,12 +32,16 @@ df = load_or_process_dataset(dataset_path)
 # Feature creation and vectorization for training phase
 def prepare_features(df, vectorizer=None, fit_vectorizer=False):
     # If in training phase, fit the vectorizer; if not, transform using the loaded vectorizer
+    df['lemmatised_text'] = df['lemmatised_text'].astype(str)  # Ensure all elements are strings
+
     if fit_vectorizer:
         vectorizer = TfidfVectorizer(ngram_range=(1,1))
-        X_text = vectorizer.fit_transform(df['lemmatised_text'])
+        preprocessed_data = df['lemmatised_text'].apply(lambda text: preprocess_text(text)[0])  # Extract lemmatised text only
+        X_text = vectorizer.fit_transform(preprocessed_data)
         dump(vectorizer, vectorizer_path)  # Save the fitted vectorizer for later use
     else:
-        X_text = vectorizer.transform(df['lemmatised_text'])
+        preprocessed_data = df['lemmatised_text'].apply(lambda text: preprocess_text(text)[0])  # Extract lemmatised text only
+        X_text = vectorizer.transform(preprocessed_data)
 
     X_combined = X_text
 
