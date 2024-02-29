@@ -1,6 +1,5 @@
-from analyser import preprocess_text, predict_sustainability
+from analyser import predict_sustainability
 import pandas as pd
-from langdetect import detect
 
 # Import Dataset
 dataset_path = 'dataset.csv'
@@ -8,8 +7,7 @@ df = pd.read_csv(dataset_path, usecols=['about', 'Label'])
 
 # Detect language and apply predict_sustainability outside of lambda for better performance
 def process_row(row):
-    language = detect(row['about'])  # Detect language
-    predicted_label, _ = predict_sustainability(row['about'])  # Assuming predict_sustainability doesn't need language
+    predicted_label, language = predict_sustainability(row['about']) 
     return predicted_label, language
 
 # Apply the function to the DataFrame
