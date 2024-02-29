@@ -18,6 +18,7 @@ preprocessed_path = 'preprocessed_df.joblib'
 #     print("Loaded preprocessed data from cache.")
 # except FileNotFoundError:
     # print("Preprocessed data not found, preprocessing now...")
+
 df = pd.read_csv(dataset_path, usecols=['about', 'Label'])
 # Function to clean and lemmatise text
 df['lemmatised_text'] = df['about'].apply(preprocess_text)
@@ -27,15 +28,18 @@ dump(df, preprocessed_path)
 non_sustainable_text = df[df['Label'] == 0]['lemmatised_text']
 sustainable_text = df[df['Label'] == 1]['lemmatised_text']
 
-# Initialize the TF-IDF Vectorizer
+
+# # Initialize the TF-IDF Vectorizer
 tfidf_vectorizer_ngrams_path = 'tfidf_vectorizer_ngrams.joblib'
 X_tfidf_ngrams_path = 'X_tfidf_ngrams.joblib'
 y_path = 'y.joblib'
+ngram_range=(1,1)
 
+tfidf_vectorizer_ngrams = TfidfVectorizer(ngram_range=ngram_range)
 
-tfidf_vectorizer_ngrams = TfidfVectorizer(ngram_range=(1, 1))
 # Fit and transform the lemmatised text
 X_tfidf_ngrams = tfidf_vectorizer_ngrams.fit_transform(df['lemmatised_text'])
+
 # Your target variable
 y = df['Label']
 
@@ -62,13 +66,16 @@ recall = recall_score(y_test, y_pred, average='weighted')
 f1 = f1_score(y_test, y_pred, average='weighted') 
 cm = confusion_matrix(y_test, y_pred)
 
+
+title = f"Ngram of {ngram_range}"
+
 # Calculate and print evaluation metrics
+print(title)
 print("Accuracy: ", accuracy)
 print("Precision:", precision)
 print("Recall:   ", recall)
 print("F1 Score: ", f1)
 print("Confusion Matrix:\n", cm)
-
 
 dump(tfidf_vectorizer_ngrams, 'tfidf_vectorizer_ngrams.joblib')
 dump(model, 'model.joblib')
