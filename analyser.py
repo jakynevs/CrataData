@@ -42,28 +42,28 @@ def preprocess_text(text):
     text = re.sub(r'\bhola\b', '', text)  # Removes whole word 'hola' 
     text = text.replace('ei ei', '') # Removes string 'ei ei' from data
 
-    try:
-        # Use langdetect to determine the language
-        lang = detect(text)
-    except:
-        lang = "en"
+    # try:
+    #     # Use langdetect to determine the language
+    #     lang = detect(text)
+    # except:
+    #     lang = "en"
 
-    if lang == "es":
-        # Spanish text processing with SpaCy
-        doc = nlp_spacy_es(text)
-        lemmatised_tokens = [token.lemma_ for token in doc]
+    # if lang == "es":
+    #     # Spanish text processing with SpaCy
+    #     doc = nlp_spacy_es(text)
+    #     lemmatised_tokens = [token.lemma_ for token in doc]
     
-    else:
-        # Tokenization
-        tokens = text.split()
+    # else:
+    # Tokenization
+    tokens = text.split()
 
-        # Remove stopwords
-        stop_words = set(stopwords.words('english')) | set(stopwords.words('spanish'))
-        tokens = [word for word in tokens if word not in stop_words]
-        
-        # Lemmatization
-        lemmatizer = WordNetLemmatizer()
-        lemmatised_tokens = [lemmatizer.lemmatize(word) for word in tokens]
+    # Remove stopwords
+    stop_words = set(stopwords.words('english')) | set(stopwords.words('spanish'))
+    tokens = [word for word in tokens if word not in stop_words]
+    
+    # Lemmatization
+    lemmatizer = WordNetLemmatizer()
+    lemmatised_tokens = [lemmatizer.lemmatize(word) for word in tokens]
     
     lemmatised_text = ' '.join(lemmatised_tokens)
     
