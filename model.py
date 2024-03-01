@@ -8,11 +8,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from joblib import dump, load
 from analyser import preprocess_text
 from scipy.sparse import csr_matrix, hstack
-
-# Paths for data and saved models
-dataset_path = 'dataset.csv'
-vectorizer_path = 'tfidf_vectorizer_ngrams.joblib'
-model_path = 'model.joblib'
+from constants import *
 
 # Function to load or process and save the dataset
 def load_or_process_dataset(path):
@@ -21,47 +17,65 @@ def load_or_process_dataset(path):
         print("Loaded preprocessed data from cache.")
     
     except FileNotFoundError:
-        # Ensure data is in the correct format for processing
+        print("No preprocessed data in cache. Preprocessing text")
+        df = pd.read_csv(DATASET_PATH, usecols=['about', 'Label'])
         df['about'] = df['about'].astype(str)
         df['lemmatised_text'] = df['about'].apply(lambda text: preprocess_text(text))
         dump(df, 'preprocessed_df.joblib')
-    
+        print("Preprocessed dataset and saved.")
+
     return df
 
 # Feature creation and vectorization for training phase
-def prepare_features(df, vectorizer=None, fit_vectorizer=False):
-    preprocessed_data = df['lemmatised_text'].apply(lambda text: preprocess_text(str(text))[0])  # Convert text to string before processing
+def prepare_features(df):
+    df['lemmatised_text'] = df['lemmatised_text'].astype(str)
 
+    try:
+        vectorizer = load(VECTORIZER_PATH)
+        print("Loaded existing vectorizer from cache.")
     
-    if vectorizer is None:
+    except FileNotFoundError:
+        # If not found, initialize and fit a new vectorizer
+        print("No vectorizer in cache. Fitting new...")
+        
         vectorizer = TfidfVectorizer(ngram_range=(1, 1))
-        if fit_vectorizer:
-            X_text = vectorizer.fit_transform(preprocessed_data)
-            dump(vectorizer, vectorizer_path)
-    
+
+        X_text = vectorizer.fit_transform(df['lemmatised_text'])
+        
+        # Save vectorizer for future use
+        dump(vectorizer, VECTORIZER_PATH)
+        print("Vectorizer fitted and saved.")
+        
     else:
-        X_text = vectorizer.transform(preprocessed_data)
+        # If vectorizer was found, transform data with it
+        X_text = vectorizer.transform(df['lemmatised_text'])
 
     return X_text
 
 # Training phase
 def train_model(df):
-    X_combined = prepare_features(df, fit_vectorizer=True)
+    X = prepare_features(df)
     y = df['Label']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    try:
+        model = load(MODEL_PATH)
+        print("Loaded model from cache.")
+    
+    except FileNotFoundError:
+        # If not found, train a new model
+        print("No model in cache. Training new model...")
 
-    # Split data
-    X_train, X_test, y_train, y_test = train_test_split(X_combined, y, test_size=0.2, random_state=42)
+        # Balance datasets and train model
+        labels = np.unique(y_train)
+        class_weights = compute_class_weight('balanced', classes=labels, y=y_train)
+        class_weights_dict = dict(zip(labels, class_weights))
 
-    # Balance datasets and train model
-    labels = np.unique(y_train)
-    class_weights = compute_class_weight('balanced', classes=labels, y=y_train)
-    class_weights_dict = dict(zip(labels, class_weights))
+        model = LogisticRegression(class_weight=class_weights_dict, max_iter=1000)
+        model.fit(X_train, y_train)
 
-    model = LogisticRegression(class_weight=class_weights_dict, max_iter=1000)
-    model.fit(X_train, y_train)
-
-    # Save the trained model
-    dump(model, model_path)
+        # Save the trained model
+        dump(model, MODEL_PATH)
 
     # Predict on the test set and evaluate
     y_pred = model.predict(X_test)
@@ -76,5 +90,6 @@ def evaluate_model(y_test, y_pred):
     print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
 
 if __name__ == "__main__":
-    df = load_or_process_dataset(dataset_path)
+    df = load_or_process_dataset(DATASET_PATH)
+    print("Data preprocessed, training model...")
     train_model(df)
