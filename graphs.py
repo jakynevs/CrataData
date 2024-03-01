@@ -7,8 +7,8 @@ from analyser import preprocess_text
 from model import load_or_process_dataset
 
 # Import Dataset
-dataset_path = 'dataset.csv'
-df = load_or_process_dataset(dataset_path)
+DATASET_PATH = 'dataset.csv'
+df = load_or_process_dataset(DATASET_PATH)
 
 # Ensure preprocess_text returns a string, assuming the first element is the desired text
 df['lemmatised_text'] = df['about'].apply(lambda x: preprocess_text(x)[0] if isinstance(preprocess_text(x), tuple) else preprocess_text(x))

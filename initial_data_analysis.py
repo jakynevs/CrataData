@@ -11,7 +11,7 @@ from analyser import preprocess_text
 from scipy.sparse import hstack, csr_matrix
 
 # Import Dataset
-dataset_path = 'dataset.csv'
+DATASET_PATH = 'dataset.csv'
 preprocessed_path = 'preprocessed_df.joblib'
 
 try:
@@ -21,7 +21,7 @@ try:
 except FileNotFoundError:
     print("Preprocessed data not found, preprocessing now...")
 
-    df = pd.read_csv(dataset_path, usecols=['about', 'Label'])
+    df = pd.read_csv(DATASET_PATH, usecols=['about', 'Label'])
 
     # Function to clean and lemmatise text
     df['lemmatised_text'] = df['about'].apply(preprocess_text)

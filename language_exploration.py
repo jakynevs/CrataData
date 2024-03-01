@@ -2,8 +2,8 @@ from analyser import predict_sustainability
 import pandas as pd
 
 # Import Dataset
-dataset_path = 'dataset.csv'
-df = pd.read_csv(dataset_path, usecols=['about', 'Label'])
+DATASET_PATH = 'dataset.csv'
+df = pd.read_csv(DATASET_PATH, usecols=['about', 'Label'])
 
 # Detect language and apply predict_sustainability outside of lambda for better performance
 def process_row(row):
