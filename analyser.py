@@ -4,6 +4,7 @@ import spacy
 from langdetect import detect, DetectorFactory, LangDetectException
 from nltk.corpus import stopwords
 from joblib import load
+from constants import *
 
 # Ensure consistent results from langdetect
 DetectorFactory.seed = 0
@@ -25,11 +26,16 @@ except Exception as e:
 
 # Load the saved TF-IDF Vectorizer and model
 try:
-    tfidf_vectorizer_ngrams = load('tfidf_vectorizer_ngrams.joblib')
-    model = load('model.joblib')
+    vectorizer = load(VECTORIZER_PATH)
 except FileNotFoundError:
-    print("Model or vectorizer file not found.")
-    raise
+    print(f"Vectorizer file not found at {VECTORIZER_PATH}. A new one will be fitted.")
+    vectorizer = None 
+
+try:
+    model = load(MODEL_PATH)
+except FileNotFoundError:
+    print(f"Model file not found at {MODEL_PATH}. A new model will be trained.")
+    model = None  # You can later check if model is None and then train a new one
 
 def preprocess_text(text):
         
@@ -58,13 +64,14 @@ def preprocess_text(text):
     doc = nlp_spacy_es(text) if lang == "es" else nlp_spacy_en(text)
     stop_words = set(stopwords.words('spanish' if lang == "es" else 'english'))
     lemmatised_tokens = [token.lemma_ for token in doc if token.text not in stop_words]
-
-    return ' '.join(lemmatised_tokens), lang
+    lemmatised_text = ' '.join(lemmatised_tokens)
+    
+    return lemmatised_text, lang
 
 # Function that uses model to predict text
 def predict_sustainability(text):
     preprocessed_text, lang = preprocess_text(text)  # Preprocess and get language
-    transformed_text = tfidf_vectorizer_ngrams.transform([preprocessed_text])
+    transformed_text = vectorizer.transform([preprocessed_text])
     prediction = model.predict(transformed_text)
     result = (prediction[0], lang)
     return result
