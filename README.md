@@ -23,6 +23,7 @@ Before you begin, ensure you have:
 - **language_exploration.py**: Explored how handling of different languages in the preprocessing step altered model performance.
 - **model.py**: Defines a process to load or preprocess a dataset, create text features using TF-IDF vectorization, train a logistic regression model with balanced class weights, evaluate the model's performance on a test set, and save both the trained model and the vectorizer for future use. 
 - **scraper.py**: Given the URL of a company LinkedIn page; web scrapes the text from the bio of the company and predicts if the company is sustainable.
+- **pipeline.py**: Defines and executes a machine learning pipeline. Utilises grid search for hyperparameter tuning, and evaluates the model's performance on a test set.
 
 ## Installation
 
