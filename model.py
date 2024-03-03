@@ -71,7 +71,7 @@ def train_model(df):
         class_weights = compute_class_weight('balanced', classes=labels, y=y_train)
         class_weights_dict = dict(zip(labels, class_weights))
 
-        model = LogisticRegression(class_weight=class_weights_dict, max_iter=1000)
+        model = LogisticRegression(class_weight=class_weights_dict, C=10, max_iter=1000)
         model.fit(X_train, y_train)
 
         # Save the trained model
