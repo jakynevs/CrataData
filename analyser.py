@@ -4,6 +4,7 @@ import spacy
 from langdetect import detect, DetectorFactory, LangDetectException
 from nltk.corpus import stopwords
 from joblib import load
+from scipy.sparse import csr_matrix, hstack
 from constants import *
 
 # Ensure consistent results from langdetect
@@ -71,7 +72,16 @@ def preprocess_text(text):
 # Function that uses model to predict text
 def predict_sustainability(text):
     preprocessed_text, lang = preprocess_text(text)  # Preprocess and get language
-    transformed_text = vectorizer.transform([preprocessed_text])
-    prediction = model.predict(transformed_text)
+    # Vectorize the preprocessed text
+    transformed_text = vectorizer.transform([preprocessed_text])    
+    
+    # Calculate and transform bio_length into sparse matrix format
+    bio_length = len(preprocessed_text.split())
+    bio_length_sparse = csr_matrix([[bio_length]]) 
+
+    # Combine vectorized text and bio_length features
+    combined_features = hstack([transformed_text, bio_length_sparse])
+
+    prediction = model.predict(combined_features)
     result = (prediction[0], lang)
     return result
