@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.utils.class_weight import compute_class_weight
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from joblib import dump, load
 from analyser import preprocess_text
@@ -21,7 +21,7 @@ def load_or_process_dataset(path):
         df = pd.read_csv(DATASET_PATH, usecols=['about', 'Label'])
         df['about'] = df['about'].astype(str)
         df['lemmatised_text'] = df['about'].apply(lambda text: preprocess_text(text))
-        dump(df, 'preprocessed_df.joblib')
+        dump(df, PREPROCESSED_DATA_PATH)
         print("Preprocessed dataset and saved.")
 
     return df
@@ -29,6 +29,9 @@ def load_or_process_dataset(path):
 # Feature creation and vectorization for training phase
 def prepare_features(df):
     df['lemmatised_text'] = df['lemmatised_text'].astype(str)
+
+    # Calculate bio length feature
+    df['bio_length'] = df['lemmatised_text'].apply(lambda x: len(x.split()))
 
     try:
         vectorizer = load(VECTORIZER_PATH)
@@ -50,7 +53,11 @@ def prepare_features(df):
         # If vectorizer was found, transform data with it
         X_text = vectorizer.transform(df['lemmatised_text'])
 
-    return X_text
+    # Convert bio length to a sparse matrix format and stack with text features
+    bio_length_sparse = csr_matrix(df['bio_length'].values.reshape(-1, 1))
+    X_combined = hstack([X_text, bio_length_sparse])
+
+    return X_combined
 
 # Training phase
 def train_model(df):
@@ -81,6 +88,9 @@ def train_model(df):
     y_pred = model.predict(X_test)
     evaluate_model(y_test, y_pred)
 
+    scores = cross_val_score(model, X_train, y_train, cv=5) 
+    print("Cross-validated scores:", scores)
+
 # Function to evaluate the model
 def evaluate_model(y_test, y_pred):
     print("Accuracy: ", accuracy_score(y_test, y_pred))
@@ -88,6 +98,7 @@ def evaluate_model(y_test, y_pred):
     print("Recall:   ", recall_score(y_test, y_pred, average='weighted'))
     print("F1 Score: ", f1_score(y_test, y_pred, average='weighted'))
     print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
 
 if __name__ == "__main__":
     df = load_or_process_dataset(DATASET_PATH)
